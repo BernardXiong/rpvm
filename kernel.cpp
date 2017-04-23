@@ -21,12 +21,42 @@
 
 static const char FromKernel[] = "kernel";
 
+
+
+class KMultiCoreSched : public CMultiCoreSupport
+{
+public:
+    KMultiCoreSched (CLogger *m_Logger, CMemorySystem *pMemorySystem){
+
+    }
+    ~KMultiCoreSched (void){
+
+    }
+
+    boolean Initialize (void)   { return TRUE; }
+
+    void Run (unsigned nCore) {
+        //scheduler stuff
+        //start scheduling
+        
+    }
+
+private:
+
+private:
+    CLogger *m_Logger;
+};
+
+
 CKernel::CKernel (void)
 :	m_Screen (m_Options.GetWidth (), m_Options.GetHeight ()),
 	m_Timer (&m_Interrupt),
 	m_Logger (m_Options.GetLogLevel (), &m_Timer)
 {
 	m_ActLED.Blink (5);	// show we are alive
+    
+    for (int i = 0; i < CORES; ++i)
+        m_MultiCoreSched[i] = new KMultiCoreSched(&m_Logger, &m_Memory);
 }
 
 CKernel::~CKernel (void)
@@ -67,10 +97,11 @@ boolean CKernel::Initialize (void)
 	{
 		bOK = m_Timer.Initialize ();
 	}
-    // if (bOK)
-    // {
-    //     bOK = m_MultiCoreKernel.Initialize ();   // must be initialized at last
-    // }
+    if (bOK)
+    {
+        for (int i = 0; i < CORES && bOK; ++i)
+          bOK = m_MultiCoreSched[i].Initialize ();   // must be initialized at last
+    }
 	return bOK;
 }
 
@@ -89,7 +120,6 @@ static thread_t *RUNNING_THREAD_ON_CORE[1] = {&main_thread};
 
 static TCB main_tcb = TCB();
 
-#include <circle/multicore.h>
 
 TShutdownMode CKernel::Run (void)
 {
@@ -128,34 +158,6 @@ CKernel::ThreadWorker(int i, void *ker){
     TaskSwitch(&(s_thread.tcb->regs),&(main_tcb.regs));
     //thread_exit(100+i);
 }
-
-
-class CMultiCoreKernel : public CMultiCoreSupport
-{
-public:
-    CMultiCoreKernel (CScreenDevice *pScreen, CMemorySystem *pMemorySystem);
-    ~CMultiCoreKernel (void);
-
-    boolean Initialize (void)   { return TRUE; }
-
-    void Run (unsigned nCore) {
-
-
-    }
-
-private:
-
-private:
-    CScreenDevice *m_pScreen;
-};
-
-
-
-
-
-
-
-
 
 
 

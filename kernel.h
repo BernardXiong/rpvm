@@ -32,12 +32,16 @@
 #include <circle/logger.h>
 #include <circle/types.h>
 
+#include <circle/multicore.h>
+
 enum TShutdownMode
 {
   ShutdownNone,
   ShutdownHalt,
   ShutdownReboot
 };
+
+class KMultiCoreSched;
 
 class CKernel
 {
@@ -65,7 +69,7 @@ private:
   CInterruptSystem   m_Interrupt;
   CTimer             m_Timer;
   CLogger            m_Logger;
-  //CMultiCoreKernel   m_MultiCoreKernel;  
+  KMultiCoreSched    *m_MultiCoreSched[CORES];  
 };
 
 #endif
